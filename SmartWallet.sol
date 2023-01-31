@@ -18,6 +18,7 @@ contract SmartWallet {
     mapping(address => bool) public isAllowedToSend;
 
     mapping(address => bool) public guardians; 
+    mapping(address =>mapping(address => bool)) nextOwnerGuardianVotedBool;
     address payable nextOwner;
     uint guardianResetCount;
     uint public constant minConfirmationsForNewOwner = 3;
@@ -43,6 +44,19 @@ contract SmartWallet {
 
     function proposeNewOwner(address payable _newOwner){
         require( guardians[msg.sender], "You are not a owner, NOT ALLOWED  aborting");
+        require (nextOwnerGuardianVotedBool[_newOwner][msg.sender] == false, "you already voted");
+        if(_newOwner != nextOwner){
+            nextOwner = _newOwner;
+            guardianResetCount = 0;
+        }
+
+           guardianResetCount++;
+
+        if(guardianResetCount >= minConfirmationsForNewOwner) {
+            owner = _newOwner;
+            nextOwner = payable(address(0));
+        }   
+        
 
     }
 
